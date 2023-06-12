@@ -100,7 +100,7 @@ class _GameBoardState extends State<GameBoard> {
             }
             if (board[newRow][newCol] != null) {
               if (board[newRow][newCol]!.isWhite != piece.isWhite) {
-                candidateMoves.add([newRow, newCol]);
+                candidateMoves.add([newRow, newCol]); //Kill
               }
               break;
             }
@@ -111,12 +111,122 @@ class _GameBoardState extends State<GameBoard> {
 
         break;
       case ChessPieceType.knight:
+        //Horizontal and vertical directions
+        var knightMoves = [
+          [-2, -1], //up 2 left 1
+          [-2, 1], //up 2 right 1
+          [-1, -2], //up 1 left 2
+          [-1, 2], //up 1 right 2
+          [1, -2], //down 2 left 2
+          [1, 2], //down 2 right 2
+          [2, -1], //down 1 left 1
+          [2, 1] //down 1 right 1
+        ];
+
+        for (var move in knightMoves) {
+          var newRow = row + move[0];
+          var newCol = col + move[1];
+          if (!isInBoard(newRow, newCol)) {
+            continue;
+          }
+          if (board[newRow][newCol] != null) {
+            if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+              candidateMoves.add([newRow, newCol]); //Kill
+            }
+            continue;
+          }
+          candidateMoves.add([newRow, newCol]);
+        }
         break;
       case ChessPieceType.bishop:
+        //diagonal directions
+        var directions = [
+          [-1, -1], //up left
+          [-1, 1], //up right
+          [1, -1], //down left
+          [1, 1] //down right
+        ];
+
+        for (var direction in directions) {
+          var i = 1;
+          while (true) {
+            var newRow = row + i * direction[0];
+            var newCol = row + i * direction[1];
+            if (!isInBoard(newRow, newCol)) {
+              break;
+            }
+            if (board[newRow][newCol] != null) {
+              if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+                candidateMoves.add([newRow, newCol]); //capture
+              }
+              break; // block
+            }
+            candidateMoves.add([newRow, newCol]);
+            i++;
+          }
+        }
         break;
+
       case ChessPieceType.queen:
+        //all eight directions: up, down, left, right, and 4 diagonals
+        var directions = [
+          [-1, 0], //up
+          [1, 0], //down
+          [0, -1], //left
+          [0, 1], //right
+          [-1, -1], //up left
+          [-1, 1], //up right
+          [1, -1], // down left
+          [1, 1], // down right
+        ];
+
+        for (var direction in directions) {
+          var i = 1;
+          while (true) {
+            var newRow = row + i * direction[0];
+            var newCol = row + i * direction[1];
+            if (!isInBoard(newRow, newCol)) {
+              break;
+            }
+            if (board[newRow][newCol] != null) {
+              if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+                candidateMoves.add([newRow, newCol]); // capture
+              }
+              break; //blocked
+            }
+            candidateMoves.add([newRow, newCol]);
+            i++;
+          }
+        }
+
         break;
       case ChessPieceType.king:
+        //all eight directions
+        var directions = [
+          [-1, 0], //up
+          [1, 0], //down
+          [0, -1], //left
+          [0, 1], //right
+          [-1, -1], //up left
+          [-1, 1], //up right
+          [1, -1], // down left
+          [1, 1], // down right
+        ];
+
+        for (var direction in directions) {
+          var newRow = row + direction[0];
+          var newCol = row + direction[1];
+          if (!isInBoard(newRow, newCol)) {
+            break;
+          }
+          if (board[newRow][newCol] != null) {
+            if (board[newRow][newCol]!.isWhite != piece.isWhite) {
+              candidateMoves.add([newRow, newCol]); // capture
+            }
+            continue; //blocked
+          }
+          candidateMoves.add([newRow, newCol]);
+        }
         break;
 
       default:
@@ -136,6 +246,7 @@ class _GameBoardState extends State<GameBoard> {
     // initialize the board with nulls, meaning non pieces in those positions
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
+    
 
     //Place pawns
     for (int i = 0; i < 8; i++) {
